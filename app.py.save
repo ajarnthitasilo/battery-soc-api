@@ -30,15 +30,36 @@ def estimate_soc(cell_voltage):
     elif cell_voltage >= voltages[-1]:
         return 100
 
+from flask import Flask, request, jsonify
+
+app = Flask(battery-soc-api)
+
+@app.route("/bvv", methods=["POST"])
+def bvv_endpoint():
+    data = request.get_json()
+    bvv_value = data.get("bvv")
+    
+    if bvv_value is None:
+        return jsonify({"error": "Missing 'bvv' in request"}), 400
+    
+    if not isinstance(bvv_value, (int, float)):
+        return jsonify({"error": "'bvv' must be a number"}), 400
+    
+    # ตัวอย่าง: ส่งกลับค่า bvv ที่รับมา พร้อมข้อความ
+    return jsonify({
+        "received_bvv": bvv_value,
+        "message": "BVV value received successfully"
+    })
+
+if __name__ == "__main__":
+    app.run(debug=True, port=5001)
     for i in range(1, len(voltages)):
         if cell_voltage < voltages[i]:
             v1, v2 = voltages[i-1], voltages[i]
             soc1, soc2 = soc_table[v1], soc_table[v2]
             soc = soc1 + (cell_voltage - v1) * (soc2 - soc1) / (v2 - v1)
-            return round(soc, 2)
+              return round(soc, 2)
     return None
-       
-
 
 @app.route("/soc", methods=["POST"])
 def calculate_soc():
@@ -62,5 +83,5 @@ def home():
     return "Battery SOC API is running ✅"
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5001)
+    app.run(host="0.0.0.0", port=5000)
 

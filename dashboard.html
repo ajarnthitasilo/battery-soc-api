@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Battery Browser Scraper</title>
+</head>
+<body id="bg" class="bg-slate-950 text-white min-h-screen flex items-center justify-center transition-all duration-500">
+    <div class="p-10 bg-slate-900 rounded-[3rem] border-4 border-slate-800 shadow-2xl text-center w-80">
+        <div id="status" class="text-yellow-500 font-mono text-[10px] mb-6 tracking-widest uppercase italic">Reading Browser View...</div>
+        
+        <div class="mb-8">
+            <div class="text-[10px] text-slate-500 uppercase tracking-widest mb-1">Live Bus Voltage</div>
+            <div id="bvv" class="text-6xl font-black font-mono tracking-tighter text-white">0.0</div>
+            <div class="text-blue-500 font-bold text-xs mt-2 italic tracking-[0.2em]">VOLTS DC</div>
+        </div>
+
+        <div class="py-8 bg-black rounded-3xl border border-slate-800 shadow-inner">
+            <div class="text-[10px] text-green-500 uppercase tracking-widest mb-1">State of Charge</div>
+            <div id="soc" class="text-8xl font-black text-green-500">0%</div>
+            <div id="vc" class="text-[9px] text-slate-600 mt-4 font-mono tracking-widest uppercase">Avg Cell: 0.0000V</div>
+        </div>
+        
+        <div id="time" class="text-[9px] text-slate-700 mt-6 font-mono tracking-widest">---</div>
+    </div>
+    <script>
+        async function scrape() {
+            try {
+                const r = await fetch('/api/data?t=' + Date.now());
+                const d = await r.json();
+                document.getElementById('bvv').innerText = d.bvv.toFixed(1);
+                document.getElementById('soc').innerText = Math.round(d.soc) + '%';
+                document.getElementById('vc').innerText = "Avg Cell: " + d.v_cell.toFixed(4) + "V";
+                document.getElementById('time').innerText = "LAST READ: " + d.time;
+                
+                const bg = document.getElementById('bg');
+                if(d.alert) { bg.className = 'bg-red-950 text-white min-h-screen flex items-center justify-center transition-all'; }
+                else { bg.className = 'bg-slate-950 text-white min-h-screen flex items-center justify-center transition-all'; }
+            } catch(e) { document.getElementById('status').innerText = "CONNECTION LOST"; }
+        }
+        setInterval(scrape, 3000); // อ่านทุก 3 วินาที
+        scrape();
+    </script>
+</body>
+</html>
